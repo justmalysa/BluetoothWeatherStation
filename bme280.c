@@ -2,26 +2,26 @@
 #include "i2c.h"
 #include "stm32f4xx_hal.h"
 
-#define BME280_ADDR 0xEC
-#define BME280_WRITE 0xEC
-#define BME280_READ 0xED
-#define BME280_CTRL_MEAS 0xF4 // register for BME280 configuration
-#define BME280_MODE_AND_OSRS 0x25 // oversampling x1 and forced mode
-#define BME280_CTRL_HUM 0xF2
-#define BME280_OSRS_H 0x01
-#define BME280_STATUS 0xF3
-#define BME280_STATUS_BUSY (1 << 3)
-#define BME280_TEMP 0xFA
-#define BME280_PRESS 0xF7
-#define BME280_HUM 0xFD
-#define BME280_MEAS_VALUE_START 0xF7
-#define BME280_MEAS_VALUE_COUNT 8
-#define BME280_CALIB_VALUE_START 0x88
-#define BME280_CALIB_VALUE_COUNT 26
-#define BME280_CALIB_H_START 0xE1
-#define BME280_CALIB_H_COUNT 7
-#define BME280_RESET_REG 0xE0
-#define BME280_RESET_VALUE 0xB6
+#define BME280_ADDR                 0xEC
+#define BME280_WRITE                0xEC
+#define BME280_READ                 0xED
+#define BME280_CTRL_MEAS            0xF4 // register for BME280 configuration
+#define BME280_MODE_AND_OSRS        0x25 // oversampling x1 and forced mode
+#define BME280_CTRL_HUM             0xF2
+#define BME280_OSRS_H               0x01
+#define BME280_STATUS               0xF3
+#define BME280_STATUS_BUSY          (1 << 3)
+#define BME280_TEMP                 0xFA
+#define BME280_PRESS                0xF7
+#define BME280_HUM                  0xFD
+#define BME280_MEAS_VALUE_START     0xF7
+#define BME280_MEAS_VALUE_COUNT     8
+#define BME280_CALIB_VALUE_START    0x88
+#define BME280_CALIB_VALUE_COUNT    26
+#define BME280_CALIB_H_START        0xE1
+#define BME280_CALIB_H_COUNT        7
+#define BME280_RESET_REG            0xE0
+#define BME280_RESET_VALUE          0xB6
 
 typedef struct
 {
@@ -67,8 +67,8 @@ static bme280_event_callback m_callback;
 static volatile bme280_state_t m_state;
 static uint8_t m_dma_buffer[32];
 
-// Returns temperature in DegC, resolution is 0.01 DegC.
-// Equation taken from official documentation.
+/* Returns temperature in DegC, resolution is 0.01 DegC.
+   Equation taken from official documentation. */
 static int32_t BME280_compensate_T(int32_t adc_T, bme280_calib_temp_t const * p_calib, int32_t * p_t_fine)
 {
     int32_t var1, var2, T, t_fine;
@@ -85,8 +85,8 @@ static int32_t BME280_compensate_T(int32_t adc_T, bme280_calib_temp_t const * p_
     return T;
 }
 
-// Returns absolute pressure in hPa.
-// Equation taken from official documentation.
+/* Returns absolute pressure in hPa.
+   Equation taken from official documentation. */
 static uint32_t BME280_compensate_P(uint32_t adc_P, bme280_calib_press_t const * p_calib, int32_t const * p_t_fine)
 {
     int64_t var1, var2, p;
@@ -98,7 +98,7 @@ static uint32_t BME280_compensate_P(uint32_t adc_P, bme280_calib_press_t const *
     var1 = (((((int64_t)1)<<47)+var1))*((int64_t)p_calib->dig_P1)>>33;
     if (var1 == 0)
     {
-        return 0; // avoid exception caused by division by zero
+        return 0; /* Avoid exception caused by division by zero. */
     }
     p = 1048576-adc_P;
     p = (((p<<31)-var2)*3125)/var1;
@@ -108,8 +108,8 @@ static uint32_t BME280_compensate_P(uint32_t adc_P, bme280_calib_press_t const *
     return ((uint32_t)p >> 8);
 }
 
-// Returns humidity in %RH.
-// Equation taken from official documentation.
+/* Returns humidity in %RH.
+   Equation taken from official documentation. */
 static uint32_t BME280_compensate_H(int32_t adc_H,  bme280_calib_hum_t const * p_calib, int32_t const * p_t_fine)
 {
     int32_t v_x1_u32r;
@@ -206,13 +206,13 @@ void bme280_init(void)
         while (1);
     }
 
-    // sensor reset
+    /* sensor reset */
     HAL_Delay(3);
     uint8_t byte = BME280_RESET_VALUE;
     I2C_Mem_Write(BME280_ADDR, BME280_RESET_REG, 1, &byte, 1);
     HAL_Delay(20);
 
-    // read calibration values
+    /* read calibration values */
     uint8_t calib_values[BME280_CALIB_VALUE_COUNT + BME280_CALIB_H_COUNT];
     I2C_Mem_Read(BME280_ADDR, BME280_CALIB_VALUE_START, 1, calib_values, BME280_CALIB_VALUE_COUNT);
     I2C_Mem_Read(BME280_ADDR, BME280_CALIB_H_START, 1, &calib_values[BME280_CALIB_VALUE_COUNT], BME280_CALIB_H_COUNT);
@@ -298,4 +298,3 @@ uint32_t bme280_hum_get(int32_t const * p_t_fine)
 
     return BME280_compensate_H(hum_raw,	&m_calib_hum, p_t_fine);
 }
-
