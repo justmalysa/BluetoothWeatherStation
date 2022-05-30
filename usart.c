@@ -10,25 +10,25 @@
 /* Private definitions -------------------------------------------------------*/
 
 /* Definition for USARTx clock resources */
-#define USARTx                           USART2
-#define USARTx_CLK_ENABLE()              __USART2_CLK_ENABLE();
+#define USARTx                           USART1
+#define USARTx_CLK_ENABLE()              __USART1_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE() 
 
-#define USARTx_FORCE_RESET()             __USART2_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART2_RELEASE_RESET()
+#define USARTx_FORCE_RESET()             __USART1_FORCE_RESET()
+#define USARTx_RELEASE_RESET()           __USART1_RELEASE_RESET()
 
 /* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_2
-#define USARTx_TX_GPIO_PORT              GPIOA  
-#define USARTx_TX_AF                     GPIO_AF7_USART2
-#define USARTx_RX_PIN                    GPIO_PIN_3
-#define USARTx_RX_GPIO_PORT              GPIOA 
-#define USARTx_RX_AF                     GPIO_AF7_USART2
+#define USARTx_TX_PIN                    GPIO_PIN_6
+#define USARTx_TX_GPIO_PORT              GPIOB
+#define USARTx_TX_AF                     GPIO_AF7_USART1
+#define USARTx_RX_PIN                    GPIO_PIN_10
+#define USARTx_RX_GPIO_PORT              GPIOA
+#define USARTx_RX_AF                     GPIO_AF7_USART1
 
 /* Definition for USARTx's NVIC */
-#define USARTx_IRQn                      USART2_IRQn
-#define USARTx_IRQHandler                USART2_IRQHandler
+#define USARTx_IRQn                      USART1_IRQn
+#define USARTx_IRQHandler                USART1_IRQHandler
 
 /* Private variables ---------------------------------------------------------*/
 // USART transmit buffer descriptor
@@ -179,7 +179,7 @@ void HAL_USART_MspInit(USART_HandleTypeDef *husart)
     HAL_GPIO_Init(USARTx_RX_GPIO_PORT, &GPIO_InitStruct);
 
     /*##-3- Configure the NVIC for USART ########################################*/
-    /* NVIC for USART2 */
+    /* NVIC for USART1 */
     HAL_NVIC_SetPriority(USARTx_IRQn, 0, 1);
     HAL_NVIC_EnableIRQ(USARTx_IRQn);
 }
@@ -217,7 +217,7 @@ bool USART_Init(void)
     // configure USART
     UsartHandle.Instance          = USARTx;
 
-    UsartHandle.Init.BaudRate     = 115200;
+    UsartHandle.Init.BaudRate     = 9600;
     UsartHandle.Init.WordLength   = USART_WORDLENGTH_8B;
     UsartHandle.Init.StopBits     = USART_STOPBITS_1;
     UsartHandle.Init.Parity       = USART_PARITY_NONE;
